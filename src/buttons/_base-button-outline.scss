@@ -1,0 +1,13 @@
+@import 'functions';
+@import 'base-button';
+
+$colonise-style-base-button-outline-options: map-default((name: 'button-outline', label: 'outline'), $colonise-style-base-button-options) !global;
+
+@mixin base-button-outline($options: ()) {
+    $options: map-default($options, $colonise-style-base-button-outline-options);
+
+    #{make-button-class($options)} {
+        background-color: white;
+        color: black;
+    }
+}

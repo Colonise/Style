@@ -1,0 +1,355 @@
+
+
+//--- Generic Helpers ---//
+
+
+// Returns $value, or $default-value of $value does not have a value.
+// See has-value($value)
+@function default($value, $default-value) {
+    @return if(has-value($value), $value, $default-value);
+}
+
+// Checks if $value has a value
+// String, List, ArgList: length > 0
+// Bool: itself
+// Number, Map, Function, Color: true
+// Null: false
+// Other: false
+@function has-value($value) {
+    @if(is-string($value)) {
+        @return str-length($value) > 0;
+    }
+    @else if(is-list($value) or is-arglist($value)) {
+        @return length($value) > 0;
+    }
+    @else if(is-bool($value)) {
+        @return $value;
+    }
+    @else if(is-number($value) or is-map($value) or is-function($value) or is-color($value)) {
+        @return true;
+    }
+    @else {
+        // Probably null
+        @return false;
+    }
+}
+
+
+//--- Type Helpers ---//
+
+
+// Returns true if $value is the type in $type
+@function is-type($value, $type) {
+    @return if(type-of($value) == $type, true, false);
+}
+
+// Returns true if $value is a number
+@function is-number($value) {
+    @return is-type($value, 'number');
+}
+
+// Returns true if $value is a string
+@function is-string($value) {
+    @return is-type($value, 'string');
+}
+
+// Returns true if $value is a boolean
+@function is-bool($value) {
+    @return is-type($value, 'bool');
+}
+
+// Returns true if $value is a color
+@function is-color($value) {
+    @return is-type($value, 'color');
+}
+
+// Returns true if $value is null
+@function is-null($value) {
+    @return is-type($value, 'null');
+}
+
+// Returns true if $value is a list
+@function is-list($value) {
+    @return is-type($value, 'list');
+}
+
+// Returns true if $value is an arglist
+@function is-arglist($value) {
+    @return is-type($value, 'arglist');
+}
+
+// Returns true if $value is a map
+@function is-map($value) {
+    @return is-type($value, 'map');
+}
+
+// Returns true if $value is a function
+@function is-function($value) {
+    @return is-type($value, 'function');
+}
+
+// Returns true if $value is a number with the specified unit
+@function is-number-unit($value, $unit) {
+    @return is-number($value) and not unitless($value) and unit($value) == $unit;
+}
+
+// Returns true if $value is a percent
+@function is-percent($value) {
+    @return is-number-unit($value, '%');
+}
+
+// Returns true if $value is a number percent
+@function is-pixel($value) {
+    @return is-number-unit($value, 'px');
+}
+
+
+//--- String Helpers ---//
+
+
+// Returns $value as a string
+@function str-force($value) {
+    @return '#{$value}';
+}
+
+// Returns $string with all instances of $target replaces with $value
+@function str-replace($string, $target, $value) {
+    $result: '';
+    $index: str-index($string, $target);
+
+    @while $index != null {
+        $part: str-slice($string, 1, $index - 1);
+        $result: $result + $part + $value;
+
+        $string: str-slice($string, $index + 1);
+        $index: str-index($string, $target);
+    }
+
+    $result: $result + str-slice($string, 1);
+
+    @return $result;
+}
+
+// Returns the first character in a string
+@function str-first($string) {
+    $result: str-force($string);
+    $result: if(str-length($result) > 0, str-slice($result, 1, 1), '');
+    $result: unquote($result);
+
+    @return $result;
+}
+
+// Returns the first character in a string
+@function str-last($string) {
+    $result: str-force($string);
+    $result: if(str-length($result) > 0, str-slice($result, -1, -1), '');
+    $result: unquote($result);
+
+    @return $result;
+}
+
+// Splits a string into a list, separated by $separator
+@function str-split($string, $separator: ' ') {
+    $result: ();
+    $index: str-index($string, $separator);
+
+    @while $index != null {
+        $part: str-slice($string, 1, $index - 1);
+        $result: append($result, $part);
+
+        $string: str-slice($string, $index + 1);
+        $index: str-index($string, $separator);
+    }
+
+    $result: append($result, $string);
+
+    @return $result;
+}
+
+// Converts args to kebab case
+// Example: 'some text' -> 'some-text'
+@function kebab-case($args...) {
+    $list: list-force($args);
+    $list: list-compact($list);
+    $list: list-concat($list, '-');
+
+    @return $list;
+}
+
+// Converts args to initial case
+// Example: 'some text' -> 'st'
+@function initial-case($args...) {
+    $list: list-force($args);
+    $list: list-compact($list);
+    $list: list-each($list, 'str-first');
+    $result: list-concat($list, '');
+
+    @return $result;
+}
+
+// Returns a new string, replacing all separators with $separator
+@function str-normalize-separators($string, $separator: ' ') {
+    $string: str-replace($string, '-', $separator);
+    $string: str-replace($string, ',', $separator);
+    $string: str-replace($string, ' ', $separator);
+
+    @return $string;
+}
+
+
+//--- List Helpers ---//
+
+
+// Returns the first arg if it's a list, otherwise all args as a list
+@function list-force($args...) {
+    $first-arg: nth($args, 1);
+
+    @if (length($args) == 1) {
+        @if(is-list($first-arg)) {
+            @return $first-arg;
+        }
+        @else if (is-arglist($first-arg)) {
+            @return list-force($first-arg...);
+        }
+        @else if (is-string($first-arg)) {
+            $string: str-normalize-separators($first-arg);
+            $list: str-split($string);
+
+            @return $list;
+        }
+    }
+
+    $list: ();
+
+    @each $item in $args {
+        $list: append($list, $item);
+    }
+
+    @return $list;
+}
+
+// Returns a new list with each item without a value removed
+// See has-value($value)
+@function list-compact($list) {
+    $result: ();
+
+    @each $item in $list {
+        @if (has-value($item)) {
+            $result: append($result, $item);
+        }
+    }
+
+    @return $result;
+}
+
+// Joins a list together into a string, separated by $separator
+@function list-concat($list, $separator: ' ') {
+    $result: nth($list, 1);
+    $list: list-slice($list, 2);
+
+    @each $part in $list {
+        $result: $result + $separator + $part;
+    }
+
+    $result: str-slice($result, str-length($separator));
+
+    @return $result;
+}
+
+// Returns a new list having passed each item through $each-function
+@function list-each($list, $each-function) {
+    $result: ();
+
+    @each $item in $list {
+        $result: append($result, function-call($each-function, $item));
+    }
+
+    @return $result;
+}
+
+// Returns a new list with items after $from and before $to removed
+@function list-slice($list, $from: 1, $to: null) {
+    $to: default($to, length($list));
+    $result: ();
+
+    @for $index from $from to $to + 1 {
+        $result: append($result, nth($list, $index));
+    }
+
+    @return $result;
+}
+
+// Merge list-each and class together
+@function list-class($args...) {
+    $result: list-force($args);
+    $result: list-each($result, 'class');
+
+    @return $result;
+}
+
+
+//--- Function Helpers ---//
+
+
+// Returns the result of calling a function, passing in the rest of the $args
+@function function-call($function-name, $args...) {
+    $function: get-function($function-name);
+
+    @return call($function, $args...);
+}
+
+
+//--- Map Helpers ---//
+
+
+// Returns a new map with default if they were not set
+// Note: same as map-merge, but backwards
+@function map-default($map, $default) {
+    @return map-merge($default, $map);
+}
+
+// Returns the value of the map's $key if it exists, otherwise $default-value
+@function map-get-default($map, $key, $default-value) {
+    @return if(map-has-key($map, $key), map-get($map, $key), $default-value);
+}
+
+// Sets the $key equal to $value in the $map
+@function map-set($map, $key, $value) {
+    @return map-merge($map, ($key: $value));
+}
+
+// Sets the $key equal to $value in the $map if it does not already exist
+@function map-set-default($map, $key, $value) {
+    @return map-default($map, ($key: $value));
+}
+
+
+//--- Styling ---//
+
+
+// Appends 'px' to the end of a string and removes quotes
+@function pixel($value) {
+    @return unquote('#{$value}px');
+}
+
+// Appends '%' to the end of a string and removes quotes
+@function percentage($value) {
+    @return unquote('#{$value}%');
+}
+
+// Appends 'deg' to the end of a string and removes quotes
+@function degrees($value) {
+    @return unquote('#{$value}deg');
+}
+
+@function class($value) {
+    @return unquote('.#{$value}');
+}
+
+@function id($value) {
+    @return unquote('##{$value}');
+}
+
+@function attribute($value) {
+    @return unquote('[#{$value}]');
+}

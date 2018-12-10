@@ -1,0 +1,53 @@
+@import 'functions';
+
+$colonise-style-base-button-options: (name: 'button', prefix: 'button-', label: 'button', suffix: '') !global;
+
+@function make-button-class($options) {
+    $prefix: map-get-default($options, 'prefix', map-get($colonise-style-base-button-options, 'prefix'));
+    $label: map-get($options, 'label');
+    $suffix: map-get-default($options, 'suffix', map-get($colonise-style-base-button-options, 'suffix'));
+
+    @return '.' + $prefix + $label + $suffix;
+}
+
+@mixin base-button($options: ()) {
+    $background-color: map-get-default($options, 'background-color', #eeeeee);
+    $border-color: map-get-default($options, 'border-color', #cccccc);
+    $border-radius: map-get-default($options, 'border-radius', 0.2rem);
+    $border-style: map-get-default($options, 'border-style', solid);
+    $border-width: map-get-default($options, 'border-width', 1px);
+    $cursor: map-get-default($options, 'cursor', pointer);
+    $display: map-get-default($options, 'display', inline-block);
+    $font-size: map-get-default($options, 'font-size', 1rem);
+    $line-height: map-get-default($options, 'line-height', 1rem);
+    $padding: map-get-default($options, 'padding', 0.5rem 1rem);
+    $transition-duration: map-get-default($options, 'transition-duration', 0.2s);
+    $transition-property: map-get-default($options, 'transition-property', 'background-color, border-color, color');
+
+    .#{map-get($colonise-style-base-button-options, 'label')} {
+        position: relative;
+        background-color: #{$background-color};
+        border-radius: #{$border-radius};
+        border-color: #{$border-color};
+        border-radius: #{$border-radius};
+        border-style: #{$border-style};
+        border-width: #{$border-width};
+        cursor: #{$cursor};
+        display: #{$display};
+        font-size: #{$font-size};
+        line-height: #{$line-height};
+        padding: #{$padding};
+        transition-duration: #{$transition-duration};
+        transition-property: #{$transition-property};
+
+        &:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            box-shadow: inset -0.1rem -0.1rem 0.2rem #00000011, inset 0.1rem 0.1rem 0.2rem #ffffff22;
+        }
+    }
+}

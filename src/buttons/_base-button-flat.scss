@@ -1,0 +1,14 @@
+@import 'functions';
+@import 'base-button';
+
+$colonise-style-base-button-flat-options: map-default((name: 'button-flat', label: 'flat'), $colonise-style-base-button-options) !global;
+
+@mixin base-button-flat($options: ()) {
+    $options: map-default($options, $colonise-style-base-button-flat-options);
+
+    #{make-button-class($options)} {
+        &:after {
+            box-shadow: none;
+        }
+    }
+}

@@ -1,0 +1,96 @@
+@import 'functions';
+@import 'base-button';
+
+@function parse-color($color, $copy) {
+    @if (is-percent($color) and $copy) {
+        @if ($color > 0) {
+            @return lighten($copy, $color);
+        }
+        @else {
+            @return darken($copy, $color * -1);
+        }
+    }
+
+    @return $color;
+}
+
+@mixin button($options) {
+    $options: map-default($options, (label: 'button'));
+
+    $background-color: map-get($options, 'background-color');
+    $border-color: map-get-default($options, 'border-color', -10%);
+    $color: map-get-default($options, 'color', -40%);
+
+    $border-color: parse-color($border-color, $background-color);
+    $color: parse-color($color, $background-color);
+
+    $hover: map-get-default($options, 'hover', -10%);
+
+    @if (is-percent($hover)) {
+        $hover: (background-color: $hover, $border-color: $hover);
+    }
+
+    $hover-background-color: map-get-default($hover, 'background-color', -10%);
+    $hover-border-color: map-get-default($hover, 'border-color', -10%);
+    $hover-color: map-get($hover, 'color');
+
+    $hover-background-color: parse-color($hover-background-color, $background-color);
+    $hover-border-color: parse-color($hover-border-color, $border-color);
+    $hover-color: parse-color($hover-color, $color);
+
+    // Only output if we have some options
+    @if ($background-color or $border-color or $color or $hover-background-color or $hover-border-color or $hover-color) {
+        #{make-button-class($options)} {
+            &:not(#{make-button-class($colonise-style-base-button-outline-options)}) {
+                @if ($background-color) {
+                    background-color: #{$background-color};
+                }
+
+                @if ($border-color) {
+                    border-color: #{$border-color};
+                }
+
+                @if ($color) {
+                    color: #{$color};
+                }
+
+                // Only output if we have some options
+                @if ($hover-background-color or $hover-border-color or $hover-color) {
+                    &:hover {
+                        @if ($hover-background-color) {
+                            background-color: #{$hover-background-color};
+                        }
+
+                        @if ($hover-border-color) {
+                            border-color: #{$hover-border-color};
+                        }
+
+                        @if ($hover-color) {
+                            color: #{$hover-color};
+                        }
+                    }
+                }
+            }
+
+            &#{make-button-class($colonise-style-base-button-outline-options)} {
+                @if ($border-color) {
+                    border-color: #{$border-color};
+                }
+
+                &:hover {
+                    @if ($background-color) {
+                        background-color: #{$background-color};
+                    }
+
+                    @if ($border-color) {
+                        border-color: #{$border-color};
+                    }
+
+                    @if ($color) {
+                        color: #{$color};
+                    }
+                }
+            }
+        }
+    }
+}

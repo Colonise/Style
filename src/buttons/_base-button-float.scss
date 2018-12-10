@@ -1,0 +1,18 @@
+@import 'functions';
+@import 'base-button';
+
+$colonise-style-base-button-float-options: map-default((name: 'button-float', label: 'float'), $colonise-style-base-button-options) !global;
+
+@mixin base-button-float($options: ()) {
+    $options: map-default($options, $colonise-style-base-button-float-options);
+    $box-shadow: map-get-default($options, 'box-shadow', 0.1rem 0.1rem 0.2rem 0.1rem #00000011);
+    $hover-box-shadow: map-get-default($options, 'hover-box-shadow', 0.01rem 0.01rem 0.1rem #00000022);
+
+    #{make-button-class($options)} {
+        box-shadow: #{$box-shadow};
+
+        &:hover {
+            box-shadow: #{$hover-box-shadow};
+        }
+    }
+}

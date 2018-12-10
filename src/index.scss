@@ -1,0 +1,26 @@
+@import 'buttons/index';
+@import 'colors';
+
+@include base-button();
+@include base-button-flat();
+@include base-button-float();
+
+@include button($red);
+@include button($pink);
+@include button($purple);
+@include button($indigo);
+@include button($blue);
+@include button($cyan);
+@include button($teal);
+@include button($green);
+@include button($lime);
+@include button($yellow);
+@include button($amber);
+@include button($orange);
+@include button($brown);
+
+@include button($white);
+@include button($grey);
+@include button($black);
+
+@include base-button-outline();
